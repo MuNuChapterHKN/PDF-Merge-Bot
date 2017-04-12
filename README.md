@@ -12,4 +12,4 @@ When you have a token you can add it in the configuration file and start
 the bot with `go run main.go`.
 
 This bot will be hosted on [heroku](https://www.heroku.com/) and should be
-accessible with the nick PdfMergeBot.
+accessible with the nick @PdfMergeBot.
