@@ -23,12 +23,18 @@ func LoadBot(configuration *common.Configuration) {
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
+
 	updates, err := bot.GetUpdatesChan(u)
-	// TODO: check err
+    if err != nil {
+        log.Panic(err)
+    }
+
+    // Create pdf folder and init unidoc library
     initFolders("./files")
-    initUniDoc()
+    // this logger is the dummy logger that does not log nothing. We should decide what to do with the logs of the library
+    unicommon.SetLogger(unicommon.DummyLogger{})
+
 	var out string
-	// Handle each request
 	for update := range updates {
         var base_dir string = "./files/"+strconv.FormatInt(update.Message.Chat.ID, 10)+"/"
 		if update.Message == nil {
@@ -36,9 +42,10 @@ func LoadBot(configuration *common.Configuration) {
 		}
 		if update.Message.IsCommand() {
 			var command string = update.Message.Command()
-			// general commands
-			// if the message /start is received add the group or user
-			// to the db, if it's already present print the help message
+			// General Commands
+			// If the message /start is received create a folder
+            // for that specific user or group.
+			// If it's already present print the help message
 			// if help is received print the help message
 			log.Printf("Command is %s\n\n",command)
             log.Printf("the base dir is %s\n\n", base_dir)
@@ -55,7 +62,11 @@ func LoadBot(configuration *common.Configuration) {
                 if _, err := os.Stat(base_dir); os.IsNotExist(err) {
                     out = "You must first start with init and then call merge";
                 } else {
-                    files, _ := ioutil.ReadDir(base_dir)
+                    files, err := ioutil.ReadDir(base_dir)
+                    if err != nil {
+                        // Log the error messsage and abort the operation.
+                        log.Print(err)
+                    }
                     pdfWriter := unipdf.NewPdfWriter()
                     for _, f := range files {
                         log.Println("adding "+base_dir+"/"+f.Name())
@@ -76,12 +87,10 @@ func LoadBot(configuration *common.Configuration) {
 
                         for i := 0; i < numPages; i++ {
                             pageNum := i + 1
-
                             page, err := pdfReader.GetPage(pageNum)
                             if err != nil {
                                 log.Fatal(err)
                             }
-
                             err = pdfWriter.AddPage(page)
                             if err != nil {
                                 log.Fatal(err)
@@ -125,17 +134,10 @@ func LoadBot(configuration *common.Configuration) {
                     log.Fatal(err)
                 }
                 if numBytesWritten < 0 {
-                    log.Fatal("antani")
+                    log.Fatal("numBytesWritten < 0")
                 }
                 out = "Your file has been correcly added"
             }
-			// This type of messages could be:
-			//   - user added to a gruop
-			//   - user removed from a group
-			//   - bot removed from a group
-			//   . if the bot is used not in a group then every message that doesn't start with /
-			//   - what more?
-			continue;
 		}
 
         msg := tgbotapi.NewMessage(update.Message.Chat.ID, out)
@@ -151,8 +153,4 @@ func initFolders(name string) {
     if err != nil {
         log.Fatal(err)
     }
-}
-
-func initUniDoc() {
-    unicommon.SetLogger(unicommon.DummyLogger{})
 }

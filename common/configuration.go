@@ -8,6 +8,7 @@ import (
 
 type Configuration struct {
     TelegramAPI string
+    FolderName string
 }
 
 func LoadConfiguration() *Configuration {
@@ -21,10 +22,10 @@ func LoadConfiguration() *Configuration {
     if err != nil {
         log.Printf("error:", err)
     }
+    // if BOT_TOKEN env variable is setted it will overwrite the one defined in the configurations
     token := os.Getenv("BOT_TOKEN")
     if token != "" {
         configuration.TelegramAPI = token
     }
-    log.Printf("the key is %s", configuration.TelegramAPI)
     return &configuration
 }

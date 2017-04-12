@@ -1,3 +1,4 @@
 {
-    "TelegramAPI": "Your Telegram Bot Api. Ask the Father of Bots (@BotFather) if you don't have one"
+    "TelegramAPI": "Your Telegram Bot Api. Ask the Father of Bots (@BotFather) if you don't have one",
+    "FolderName": "the name of the folder where the bot will put the received pdfs. If the folder does not exists it creates it"
 }
